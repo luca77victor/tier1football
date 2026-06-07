@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+
+# 🔒 ซ่อนไฟล์ความลับสากล (เพิ่มหมวดนี้เข้าไป)
+.env
+.env.*
+.env.local
+.env.production
+
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -21,4 +30,8 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
+
 *.sw?
+
+*.sw?
+

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Newspaper, Search, X, ExternalLink, Activity, Trophy, Database, Shield, BarChart2, Zap } from 'lucide-react';
 
-// 🌐 [PRODUCTION ENVIRONMENT VARIABLES]: รองรับการสลับ URL ระหว่าง Dev และ Production บน Cloudflare/GitHub
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// 🌐 [PRODUCTION ENVIRONMENT VARIABLES]: รองรับการสลับ URL ระหว่าง Dev และ Production 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://tier1football.onrender.com';
 
 // 📊 [DATABASE แกนหลัก]: ฐานข้อมูลสถิตินักเตะพร้อมสถิติการลงเล่นและเรตติ้งเฉลี่ยฤดูกาลจริง
 const squadDatabase = [
@@ -15,7 +15,6 @@ const squadDatabase = [
   { team: 'Manchester United', player_name: "Benjamin Sesko", image: "/players/sesko.png", class_name: "The Modern Target Man", sub_title: "ศูนย์หน้าเพชฌฆาต รูปร่างสูงใหญ่แต่รวดเร็ว", glow_color: "from-red-600 to-red-900", stats: { shooting: 88, speed: 86, stamina: 82, passing: 74, tackle: 45 }, analysis: "ศูนย์หน้าตัวเป้าที่จบสกอร์เฉียบคม มีความเร็วและลูกกลางอากาศที่อันตรายมาก", match_stats: { rating: "7.48", apps: "29", goals: "19", assists: "3" } },
   { team: 'Manchester United', player_name: "Matheus Cunha", image: "/players/cunha.png", class_name: "The Dynamic Forward", sub_title: "ตัวรุกสารพัดประโยชน์ ทักษะแซมบ้าแพรวพราว", glow_color: "from-red-600 to-red-900", stats: { passing: 84, shooting: 82, speed: 85, stamina: 88, tackle: 55 }, analysis: "เชื่อมเกมรุกได้ไหลลื่น ขยันวิ่งเพรสซิ่ง และสร้างความปั่นป่วนให้กองหลังได้ตลอดเวลา", match_stats: { rating: "7.31", apps: "30", goals: "11", assists: "8" } },
   
-
   // 🔵 Manchester City 
   { team: 'Manchester City', player_name: "Erling Haaland", image: "/players/haaland.png", class_name: "The Complete Target Man", sub_title: "จอมมารบลู จักรกลถล่มประตูแห่งยุค", glow_color: "from-sky-400 to-blue-700", stats: { shooting: 98, speed: 90, stamina: 85, passing: 70, tackle: 40 }, analysis: "แข็งแกร่ง รวดเร็ว และจบสกอร์คมกริบ เป็นฝันร้ายของกองหลังทุกทีม", match_stats: { rating: "7.95", apps: "33", goals: "36", assists: "5" } },
   { team: 'Manchester City', player_name: "Phil Foden", image: "/players/foden.png", class_name: "The Roaming Playmaker", sub_title: "ผู้เล่นยอดเยี่ยม ตัวความหวังเบอร์หนึ่ง", glow_color: "from-sky-400 to-blue-700", stats: { passing: 92, speed: 88, shooting: 90, stamina: 88, tackle: 55 }, analysis: "ยกระดับตัวเองขึ้นมาเป็นเดอะแบกของทีม สอดเข้าไปยิงแถวสองได้เฉียบขาดมาก", match_stats: { rating: "7.78", apps: "34", goals: "18", assists: "11" } },
@@ -26,8 +25,8 @@ const squadDatabase = [
   // 🔴 Bayern Munich 
   { team: 'Bayern Munich', player_name: "Harry Kane", image: "/players/kane.png", class_name: "The Modern Apex Predator", sub_title: "ยอดเพชฌฆาตจอมถล่มประตู ผู้แบกความหวัง", glow_color: "from-red-500 to-red-800", stats: { shooting: 96, passing: 88, stamina: 85, intercept: 45, speed: 70 }, analysis: "เครื่องจักรผลิตประตูที่ถอยลงมาเชื่อมเกม สร้างสรรค์โอกาสให้เพื่อนได้สมบูรณ์แบบ", match_stats: { rating: "7.88", apps: "32", goals: "34", assists: "9" } },
   { team: 'Bayern Munich', player_name: "Michael Olise", image: "/players/olise.png", class_name: "The Creative Winger", sub_title: "ปีกจอมทัพคนใหม่ อาวุธหนักริมเส้นฝั่งขวา", glow_color: "from-red-500 to-red-800", stats: { speed: 88, passing: 90, shooting: 85, stamina: 82, tackle: 50 }, analysis: "มีเท้าซ้ายที่ชั่งทอง ทั้งการเปิดบอลสุดแม่นยำและการตัดเข้าในเพื่อปั่นโค้งๆ", match_stats: { rating: "7.52", apps: "28", goals: "11", assists: "12" } },
-  { team: 'Bayern Munich', player_name: "Jamal Musiala", image: "/players/musiala.png", class_name: "The Dribbling Wizard", sub_title: "พ่อมดน้อยแห่งมิวนิค เลี้ยงบอลติดเท้าดั่งเวทมนตร์", glow_color: "from-red-500 to-red-800", stats: { speed: 90, passing: 88, shooting: 85, stamina: 85, tackle: 45 }, analysis: "ทำลายแผงรับฝั่งตรงข้ามด้วยการเลี้ยงกินตัวในพื้นที่แคบๆ พลิกวิกฤตให้เป็นโอกาสได้เสมอ", match_stats: { rating: "7.75", apps: "30", goals: "14", assists: "10" } },
-  { team: 'Bayern Munich', player_name: "Joshua Kimmich", image: "https://ui-avatars.com/api/?name=Joshua+Kimmich&background=991b1b&color=fff&size=256&font-size=0.33", class_name: "The Deep-Lying Playmaker", sub_title: "จอมทัพมันสมองระดับเวิลด์คลาสของเสือใต้", glow_color: "from-red-500 to-red-800", stats: { passing: 94, intercept: 88, tackle: 85, stamina: 92, speed: 74 }, analysis: "การอ่านเกมที่ยอดเยี่ยมและวิสัยทัศน์การจ่ายบอลยาวจากแนวลึก คือหัวใจหลักในการคุมจังหวะเกมรุกและรับของทีม", match_stats: { rating: "7.64", apps: "33", goals: "4", assists: "14" } },
+  { team: 'Bayern Munich', player_name: "Jamal Musiala", image: "/players/musiala.png", class_name: "The Dribbling Wizard", sub_title: "พ่อมดน้อยแห่งมิวนิค เลี้ยงบอลติดเท้าดั่งเวทมนตร์", glow_color: "from-red-500 to-red-800", stats: { speed: 90, passing: 88, shooting: 85, stamina: 85, tackle: 45 }, analysis: "ทำลายแผงรับฝั่งตรงข้ามด้วยการเลี้ยงกินตัวในพื้นที่แคบๆ พลิกวิกฤตให้เป็นโอกาสได้เสมอ", match_stats: { rating: "7.75", apps: "30", goals: "14", assists: "10" } }, 
+  { team: 'Bayern Munich', player_name: "Joshua Kimmich", image: "/players/kimmich.png", class_name: "The Deep-Lying Playmaker", sub_title: "จอมทัพมันสมองระดับเวิลด์คลาสของเสือใต้", glow_color: "from-red-500 to-red-800", stats: { passing: 94, intercept: 88, tackle: 85, stamina: 92, speed: 74 }, analysis: "การอ่านเกมที่ยอดเยี่ยมและวิสัยทัศน์การจ่ายบอลยาวจากแนวลึก คือหัวใจหลักในการคุมจังหวะเกมรุกและรับของทีม", match_stats: { rating: "7.64", apps: "33", goals: "4", assists: "14" } },
   { team: 'Bayern Munich', player_name: "Aleksandar Pavlovic", image: "/players/pavlovic.png", class_name: "The Midfield Metronome", sub_title: "ดาวรุ่งลูกหม้อ ตัวคุมจังหวะยุคใหม่", glow_color: "from-red-500 to-red-800", stats: { passing: 88, tackle: 80, intercept: 82, stamina: 86, speed: 75 }, analysis: "จ่ายบอลฉลาด แกะเพรสซิ่งนิ่งเกินวัย ก้าวขึ้นมาเป็นกำลังหลักในแดนกลางอย่างเต็มตัว", match_stats: { rating: "7.22", apps: "28", goals: "2", assists: "4" } },
 
   // 🔴 Liverpool 
@@ -78,20 +77,14 @@ const tacticalFormations = {
 export default function App() {
   const [currentPage, setCurrentPage] = useState('news');
   const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNewsTeam, setSelectedNewsTeam] = useState('All');
-  const [activeAnalysis, setActiveAnalysis] = useState({}); 
   const [selectedDnaTeam, setSelectedDnaTeam] = useState('Manchester United');
-  
-  // 🕸️ State สำหรับเก็บโหมดการแสดงผลสถิติของการ์ดแต่ละใบ (bars หรือ radar)
+  const [activeAnalysis, setActiveAnalysis] = useState({}); 
   const [cardViewModes, setCardViewModes] = useState({});
-
-  // ⚔️ State สำหรับเก็บข้อมูลนักเตะประลองชนสถิติคู่ตัวต่อตัว
   const [compareList, setCompareList] = useState([]);
   const [showDuelModal, setShowDuelModal] = useState(false);
-
-  // 📋 ระบบบอร์ดจัดทีมสควอดด้วย Drag & Drop และการคลิกส่งลงสนาม
   const [activeFormation, setActiveFormation] = useState('4-3-3');
   const [lineup, setLineup] = useState({}); 
   const [builderSquadFilter, setBuilderSquadFilter] = useState('All');
@@ -107,7 +100,6 @@ export default function App() {
     }));
   };
 
-  // ⚔️ ฟังก์ชันคุมระบบคิว เพิ่ม-ลบรายชื่อนักเตะที่จะเอามาชนสถิติดวลกัน
   const handleCompareToggle = (player) => {
     setCompareList(prev => {
       const exists = prev.find(p => p.player_name === player.player_name);
@@ -121,7 +113,6 @@ export default function App() {
     });
   };
 
-  // 📋 [🚀 อัปเกรด DRAG START LOGIC]: คุมท่อบันทึก ID สล็อตต้นทางของการลาก (ถ้าลากจากในสนามจะดักจับไว้ได้)
   const handleDragStart = (e, player, sourceSlotId = null) => {
     e.dataTransfer.setData("text/plain", player.player_name);
     if (sourceSlotId !== null) {
@@ -140,12 +131,13 @@ export default function App() {
     e.preventDefault();
     const playerName = e.dataTransfer.getData("text/plain");
     const sourceSlotIdStr = e.dataTransfer.getData("sourceSlotId");
+
     const player = squadDatabase.find(p => p.player_name === playerName);
     if (!player) return;
 
     setLineup(prev => {
       const updated = { ...prev };
-      
+
       // กรณีที่ 1: ลากนักเตะข้ามช่อง ย้ายตำแหน่งกันเองภายในแผนการเล่น (Intra-field Drag & Swap)
       if (sourceSlotIdStr && sourceSlotIdStr !== "pool") {
         const sourceSlotId = parseInt(sourceSlotIdStr);
@@ -168,11 +160,11 @@ export default function App() {
         });
         updated[slotId] = player;
       }
+
       return updated;
     });
   };
 
-  // 📱 Mobile Fallback: กดคลิกปุ่มส่งเข้าช่องว่างอัตโนมัติเมื่อเล่นบนมือถือ
   const handleAddPlayerToFirstEmptySlot = (player) => {
     const isPresent = Object.values(lineup).some(p => p && p.player_name === player.player_name);
     if (isPresent) return;
@@ -195,17 +187,22 @@ export default function App() {
   };
 
   useEffect(() => {
-    // 🌐 เรียกใช้ตัวแปรโปรดักชัน เพื่อความเสถียรเมื่อ Deploy ขึ้นคลาวด์จริง
+    setLoading(true);
     fetch(`${API_BASE_URL}/api/news`)
       .then((res) => res.json())
       .then((response) => {
         if (response.status === 'success' && response.data) {
           setNews(response.data);
+        } else if (Array.isArray(response)) {
+          setNews(response);
+        } else if (response.data) {
+          setNews(response.data);
         }
-        setLoading(false);
       })
       .catch((err) => {
         console.error('❌ หน้าบ้านดึงข้อมูลพลาด:', err);
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, []);
@@ -362,7 +359,6 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto p-4 md:p-6 mt-4 relative z-10">
-
         {/* ============================================================================== */}
         {/* หน้า 1: NEWS FEED */}
         {/* ============================================================================== */}
@@ -401,13 +397,18 @@ export default function App() {
             </div>
 
             <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400 flex items-center gap-2 pl-2">
-              <Newspaper className="w-4 h-4 text-blue-400" /> Transfer News Updates
+              <Newspaper className="w-4 h-4 text-blue-400" /> Live Database Stream News
             </h2>
 
             {loading ? (
-              <div className="text-center py-20 text-blue-400 text-sm animate-pulse">กำลังโหลดข้อมูลข่าว...</div>
+              <div className="text-center py-20 text-blue-400 text-sm animate-pulse flex flex-col items-center gap-3 justify-center">
+                <Zap className="w-6 h-6 animate-spin text-blue-500" />
+                <span>กำลังยิงสัญญาณเพื่อดึงข่าวจริงจากระบบหลังบ้าน...</span>
+              </div>
             ) : filteredNews.length === 0 ? (
-              <div className="text-center py-20 text-slate-500 text-sm">📭 ไม่พบข่าวที่ค้นหา</div>
+              <div className="text-center py-20 text-slate-500 text-sm border border-dashed border-white/5 rounded-3xl bg-[#030712]/40">
+                📭 ไม่พบข้อมูลข่าวจริงส่งตรงจากระบบ API หลังบ้านในขณะนี้
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredNews.map((item, index) => (
@@ -425,14 +426,25 @@ export default function App() {
                       {item.summary_th}
                     </p>
                     
-                    <div className="border-t border-white/5 pt-3">
+                    <div className="border-t border-white/5 pt-3 space-y-2">
+                      <a 
+                        href={item.url || item.link || "#"} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-blue-400 bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 transition-all text-center cursor-pointer shadow-sm"
+                      >
+                        <span>อ่านข่าวเต็ม (Read Full Article)</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+
                       <button onClick={() => toggleAnalysis(index)} className="w-full flex items-center justify-between px-4 py-2 rounded-xl text-xs font-bold text-slate-400 bg-[#0f172a]/40 border border-white/5 hover:border-blue-500/30">
                         <div className="flex items-center gap-2"><Activity className="w-3.5 h-3.5" /> <span>FM Tactical Analysis</span></div>
                       </button>
+                      
                       {activeAnalysis[index] && (
-                        <div className="mt-3 bg-[#030712]/90 border border-white/5 rounded-xl p-3 space-y-2 text-xs">
+                        <div className="mt-3 bg-[#030712]/90 border border-white/5 rounded-xl p-3 space-y-2 text-xs animate-fadeIn">
                           <div className="flex justify-between"><span className="text-blue-400">Tactical Fit</span><span className="text-blue-300 font-bold">{item.tactical_fit?.score}%</span></div>
-                          <div className="flex justify-between border-t border-white/5 pt-2"><span className="text-amber-400">Financial</span><span className="text-amber-300 font-bold">{item.financial_impact?.score}%</span></div>
+                          <div className="flex justify-between border-t border-white/5 pt-2"><span className="text-amber-400">Financial Impact</span><span className="text-amber-300 font-bold">{item.financial_impact?.score}%</span></div>
                         </div>
                       )}
                     </div>
@@ -448,7 +460,6 @@ export default function App() {
         {/* ============================================================================== */}
         {currentPage === 'database' && (
           <div className="space-y-6 animate-fadeIn">
-            
             <div className="bg-[#080f28]/50 backdrop-blur-2xl border border-white/[0.04] p-5 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] space-y-4">
               <div className="flex items-center gap-2 text-slate-400">
                 <Shield className="w-4 h-4 text-emerald-400" />
@@ -488,7 +499,6 @@ export default function App() {
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none z-30" />
                     
                     <div className="relative z-10 flex flex-col h-full justify-between gap-4">
-                      
                       {/* ส่วนบน: ข้อมูลชื่อนักเตะ, ป้าย Class, แผงสถิติมินิ และรูปภาพโมเดล */}
                       <div className="flex justify-between items-start gap-4">
                         {/* ข้อมูลฝั่งซ้าย */}
@@ -529,17 +539,14 @@ export default function App() {
 
                         {/* 🖼️ รูปนักเตะแกน Y ดิ่งพ้นระยะการโดนบัง */}
                         <div className="shrink-0 relative flex justify-center items-end w-36 sm:w-48 md:w-56 h-48 sm:h-60 md:h-72 -translate-y-8 sm:-translate-y-12 md:-translate-y-14">
-                          
                           {/* ✨ เอฟเฟกต์แสงออร่าด้านหลัง */}
                           <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-36 sm:h-36 bg-gradient-to-tr ${player.glow_color} rounded-full blur-[50px] opacity-60 group-hover:opacity-100 group-hover:scale-125 transition-all duration-500`}></div>
-                          
                           {/* 🧍‍♂️ รูปนักเตะ */}
                           <img 
                             src={player.image} 
                             alt={player.player_name} 
                             className="relative z-10 w-full h-full object-contain object-bottom drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] group-hover:scale-110 transition-transform duration-500 origin-bottom"
                           />
-                          
                         </div>
                       </div>
 
@@ -595,25 +602,21 @@ export default function App() {
                       ) : (
                         renderRadarChart(player.stats, player.glow_color)
                       )}
-                      
                     </div>
                   </div>
                 );
               })}
             </div>
-
           </div>
         )}
 
         {/* ============================================================================== */}
-        {/* หน้าใหม่ 3 [SQUAD BUILDER]: บอร์ดจำลองผืนสนามฟุตบอลลากวางด้วย NATIVE DRAG & DROP HUB */}
+        {/* หน้า 3 [SQUAD BUILDER]: บอร์ดจำลองผืนสนามฟุตบอลลากวางด้วย NATIVE DRAG & DROP HUB */}
         {/* ============================================================================== */}
         {currentPage === 'builder' && (
           <div className="space-y-6 animate-fadeIn grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            
             {/* ฝั่งซ้าย 2 คอลัมน์: ผืนสนามฟุตบอลสีเขียวนีออนเรืองแสงเรนเดอร์สล็อต */}
             <div className="lg:col-span-2 bg-[#05140e] border border-emerald-500/30 rounded-3xl p-4 relative shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden">
-              
               {/* ส่วนควบคุมด้านบนสนาม: สลับแท็กติก และ แดชบอร์ดสรุปสถิติเฉลี่ยพลังทีมแบบ Dynamic */}
               <div className="flex flex-col sm:flex-row justify-between items-center bg-black/60 backdrop-blur-xl border border-white/5 p-4 rounded-2xl mb-4 gap-4 relative z-20">
                 <div className="flex items-center gap-3">
@@ -684,10 +687,11 @@ export default function App() {
                         draggable={!!player}
                         onDragStart={(e) => player && handleDragStart(e, player, slot.id)}
                         className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 bg-slate-950 flex items-center justify-center relative cursor-grab shadow-2xl transition-all ${
-                        player 
-                          ? 'border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.35)] bg-slate-900 active:cursor-grabbing' 
-                          : 'border-dashed border-emerald-500/40 hover:border-emerald-400 hover:bg-emerald-500/5'
-                      }`}>
+                          player 
+                            ? 'border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.35)] bg-slate-900 active:cursor-grabbing' 
+                            : 'border-dashed border-emerald-500/40 hover:border-emerald-400 hover:bg-emerald-500/5'
+                        }`}
+                      >
                         {player ? (
                           <>
                             {/* แสดงผลรูปภาพโมเดลนักเตะจริงขนาดใหญ่คมชัดบนผืนหญ้า */}
@@ -696,7 +700,6 @@ export default function App() {
                               alt={player.player_name} 
                               className="w-full h-full object-cover rounded-full bg-slate-900 pointer-events-none" 
                             />
-                            
                             {/* ปุ่มกากบาทถอดถอนผู้เล่นออกจากตำแหน่งด่วน ลอยเด่นเหนือโค้งมุมขวาบน */}
                             <button
                               onClick={(e) => {
@@ -725,14 +728,14 @@ export default function App() {
               </div>
             </div>
 
-            {/* ฝั่งขวา 1 คอลัมน์: คลังสระว่ายน้ำรายชื่อนักเตะสำรองที่เป็นวัตถุดิบในการลาก */}
+            {/* ฝั่งขวา 1 คอลัมน์: คลังรายชื่อนักเตะสำรองที่เป็นวัตถุดิบในการลาก */}
             <div className="bg-[#0b1224]/60 backdrop-blur-xl border border-white/5 rounded-3xl p-4 shadow-2xl h-[650px] flex flex-col">
               <div className="space-y-3 pb-3 border-b border-white/5">
                 <div className="flex items-center gap-2 text-slate-300">
                   <Shield className="w-4 h-4 text-amber-400" />
                   <span className="text-xs font-black uppercase tracking-wider">Drag Player Pool (ลากนักเตะจากตรงนี้)</span>
                 </div>
-                
+
                 {/* แถบฟิลเตอร์สโมสรด่วน */}
                 <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
                   {['All', 'Manchester United', 'Liverpool', 'Arsenal', 'Manchester City', 'Bayern Munich'].map(t => (
@@ -801,11 +804,13 @@ export default function App() {
                   })}
               </div>
             </div>
-
           </div>
         )}
-
       </main>
+
+      {/* ============================================================================== */}
+      {/* SCOUT MATRIX DUEL & MODAL SYSTEMS */}
+      {/* ============================================================================== */}
 
       {/* ⚔️ [แท่นล็อกคิวนักเตะลอยได้ - FLOATING COMPARE DOCK]: แสดงผลเมื่อมีการล็อกนักเตะตั้งแต่ 1 คนขึ้นไป */}
       {compareList.length > 0 && (
@@ -851,11 +856,10 @@ export default function App() {
         </div>
       )}
 
-      {/* ⚔️ [หน้าต่างสกรีนดวลโฮโลแกรมเต็มจอ - HOLOGRAPHIC DUEL MODAL OVERLAY]: โชว์ทักษะสเตจเต็มสูบ */}
+      {/* ⚔️ [หน้าต่างสกรีนดวลโฮโลแกรมเต็มจอ - HOLOGRAPHIC DUEL MODAL OVERLAY] */}
       {showDuelModal && compareList.length === 2 && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
           <div className="bg-[#060c21] border border-emerald-500/30 max-w-4xl w-full rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(16,185,129,0.2)] p-6 relative flex flex-col gap-6">
-            
             <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute top-1/2 left-3/4 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
 
@@ -955,11 +959,9 @@ export default function App() {
                 🚪 ปิดหน้าต่างและกลับสู่คลังนักเตะ
               </button>
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }
