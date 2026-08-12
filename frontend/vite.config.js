@@ -7,10 +7,15 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  // บังคับให้เซิร์ฟเวอร์เคลียร์แคชและรีเซ็ตทุกอย่างใหม่
   server: {
     watch: {
       usePolling: true,
     },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      }
+    }
   },
 })

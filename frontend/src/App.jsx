@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Newspaper, Search, X, ExternalLink, Activity, Trophy, Database, Shield, BarChart2, Zap } from 'lucide-react';
+import { Newspaper, Search, X, ExternalLink, Activity, Trophy, Database, Shield, BarChart2, Zap, CheckCircle, ArrowRight, DollarSign, TrendingUp, Globe, Sparkles } from 'lucide-react';
 
 // 🌐 [PRODUCTION ENVIRONMENT VARIABLES]: รองรับการสลับ URL ระหว่าง Dev และ Production 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://tier1football.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : 'http://tier1football.onrender.com');
 
 // 📊 [DATABASE แกนหลัก]: ฐานข้อมูลสถิตินักเตะพร้อมสถิติการลงเล่นและเรตติ้งเฉลี่ยฤดูกาลจริง
 const squadDatabase = [
@@ -74,12 +74,407 @@ const tacticalFormations = {
   ]
 };
 
+// 📌 ข้อมูลสำรองการย้ายทีมทางการ 5 ลีกใหญ่ (Fallback Completed Transfers)
+const completedTransfersFallback = [
+    // 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League
+    {
+        id: "tr-1",
+        player_name: "Dominic Solanke",
+        position: "ST (กองหน้า)",
+        age: 26,
+        nationality: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England",
+        from_club: "Bournemouth",
+        from_flag: "🍒",
+        to_club: "Tottenham Hotspur",
+        to_flag: "⚪",
+        fee: "£65.0M",
+        fee_eur: "€76.5M",
+        fee_val: 65.0,
+        league: "Premier League",
+        league_flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+        date: "10 Aug 2024",
+        contract: "2030",
+        rating: 9.1,
+        ai_analysis_th: "การเซ็นสัญญากองหน้าเป้าตัวจริงที่สเปอร์สตามหา ตอบโจทย์ระบบ pressing และการจบสกอร์อันเฉียบขาดของ อังเก้ โปสเตโคกลู ได้สมบูรณ์แบบ",
+        ai_analysis_en: "Tottenham secures a proven Premier League striker to lead Postecoglou's high-pressing system."
+    },
+    {
+        id: "tr-2",
+        player_name: "Matthijs de Ligt",
+        position: "CB (กองหลังตัวกลาง)",
+        age: 25,
+        nationality: "🇳🇱 Netherlands",
+        from_club: "Bayern Munich",
+        from_flag: "🔴",
+        to_club: "Manchester United",
+        to_flag: "😈",
+        fee: "£42.7M",
+        fee_eur: "€50.0M",
+        fee_val: 42.7,
+        league: "Premier League",
+        league_flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+        date: "13 Aug 2024",
+        contract: "2029",
+        rating: 8.9,
+        ai_analysis_th: "ปราการหลังระดับท็อปกลับมาร่วมงานกับ เอริค เทน ฮาก เติมความแข็งแกร่งและภาวะผู้นำในแนวรับปีศาจแดงได้อย่างตรงจุด",
+        ai_analysis_en: "De Ligt reunites with Ten Hag to bring leadership and physical presence to Man United's defense."
+    },
+    {
+        id: "tr-3",
+        player_name: "Riccardo Calafiori",
+        position: "LB / CB (กองหลัง)",
+        age: 22,
+        nationality: "🇮🇹 Italy",
+        from_club: "Bologna",
+        from_flag: "🔴🔵",
+        to_club: "Arsenal",
+        to_flag: "🔴",
+        fee: "£42.0M",
+        fee_eur: "€45.0M",
+        fee_val: 42.0,
+        league: "Premier League",
+        league_flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+        date: "29 Jul 2024",
+        contract: "2029",
+        rating: 9.3,
+        ai_analysis_th: "ดาวรุ่งทีมชาติอิตาลีผู้เล่นได้ทั้งแบ็คซ้ายและเซ็นเตอร์ มีทักษะการออกบอลจากแนวหลัง ยกระดับมิติแนวรับของอาร์เตต้าขึ้นอีกขั้น",
+        ai_analysis_en: "Versatile Italian defender enhances Arteta's build-up play and defensive flexibility."
+    },
+    {
+        id: "tr-4",
+        player_name: "Pedro Neto",
+        position: "RW / LW (ปีก)",
+        age: 24,
+        nationality: "🇵🇹 Portugal",
+        from_club: "Wolves",
+        from_flag: "🐺",
+        to_club: "Chelsea",
+        to_flag: "🔵",
+        fee: "£54.0M",
+        fee_eur: "€63.0M",
+        fee_val: 54.0,
+        league: "Premier League",
+        league_flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+        date: "11 Aug 2024",
+        contract: "2031",
+        rating: 8.7,
+        ai_analysis_th: "ปีกสายสปีดลากเลี้ยวระเบิดริมเส้น เพิ่มความอันตรายในการสวนกลับอย่างมหาศาลให้กับเชลซี",
+        ai_analysis_en: "Dynamic winger adds explosive pace and 1v1 threat to Chelsea's attack."
+    },
+    {
+        id: "tr-5",
+        player_name: "Leny Yoro",
+        position: "CB (กองหลังตัวกลาง)",
+        age: 18,
+        nationality: "🇫🇷 France",
+        from_club: "Lille",
+        from_flag: "🔴",
+        to_club: "Manchester United",
+        to_flag: "😈",
+        fee: "£52.0M",
+        fee_eur: "€62.0M",
+        fee_val: 52.0,
+        league: "Premier League",
+        league_flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+        date: "18 Jul 2024",
+        contract: "2029",
+        rating: 9.0,
+        ai_analysis_th: "เพชรเม็ดงามแนวรับปารีส แมนยูตัดหน้าเรอัล มาดริด คว้าเซ็นเตอร์อนาคตไกลมาร่วมทีมสำเร็จ",
+        ai_analysis_en: "Man Utd beats Real Madrid to sign France's most promising teenage center-back."
+    },
+    {
+        id: "tr-6",
+        player_name: "Federico Chiesa",
+        position: "RW / LW (ปีก)",
+        age: 26,
+        nationality: "🇮🇹 Italy",
+        from_club: "Juventus",
+        from_flag: "⚪⚫",
+        to_club: "Liverpool",
+        to_flag: "🔴",
+        fee: "£12.5M",
+        fee_eur: "€15.0M",
+        fee_val: 12.5,
+        league: "Premier League",
+        league_flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+        date: "29 Aug 2024",
+        contract: "2028",
+        rating: 9.4,
+        ai_analysis_th: "ดีลสุดคุ้มค่าระดับขึ้นหิ้ง หงส์แดงได้รุกระดับยูโรในราคาประหยัดอย่างน่าเหลือเชื่อ",
+        ai_analysis_en: "Bargain of the summer for Liverpool, acquiring top Euro-winning winger talent."
+    },
+
+    // 🇪🇸 La Liga
+    {
+        id: "tr-7",
+        player_name: "Kylian Mbappé",
+        position: "ST / LW (กองหน้า)",
+        age: 25,
+        nationality: "🇫🇷 France",
+        from_club: "PSG",
+        from_flag: "🔵🔴",
+        to_club: "Real Madrid",
+        to_flag: "👑",
+        fee: "Free (ฟรีเอเยนต์)",
+        fee_eur: "€0.0M",
+        fee_val: 0.0,
+        league: "La Liga",
+        league_flag: "🇪🇸",
+        date: "03 Jun 2024",
+        contract: "2029",
+        rating: 9.9,
+        ai_analysis_th: "ดีลแห่งศตวรรษ ราชันชุดขาวได้หนึ่งในกองหน้าที่ดีที่สุดในโลกมาร่วมทีมแบบไม่มีค่าตัว ผสานงาน วินิซิอุส และ จู๊ด เบลลิงแฮม",
+        ai_analysis_en: "Galactico deal of the decade. Real Madrid signs the world's premier forward on a free transfer."
+    },
+    {
+        id: "tr-8",
+        player_name: "Julián Álvarez",
+        position: "ST / SS (กองหน้า)",
+        age: 24,
+        nationality: "🇦🇷 Argentina",
+        from_club: "Manchester City",
+        from_flag: "🩵",
+        to_club: "Atlético Madrid",
+        to_flag: "🔴⚪",
+        fee: "€75.0M",
+        fee_eur: "€75.0M",
+        fee_val: 64.0,
+        league: "La Liga",
+        league_flag: "🇪🇸",
+        date: "12 Aug 2024",
+        contract: "2030",
+        rating: 9.5,
+        ai_analysis_th: "ดีลใหญ่ที่สุดของตราหมี ซูเปอร์สตาร์ดีกรีแชมป์โลกและแชมป์พรีเมียร์ลีก เข้ามาเป็นจิ๊กซอว์สำคัญในเกมรุกของดิเอโก้ ซิเมโอเน่",
+        ai_analysis_en: "World Cup winner joins Simeone's side in Atletico's biggest marquee signing of the summer."
+    },
+    {
+        id: "tr-9",
+        player_name: "Dani Olmo",
+        position: "CAM (กองกลางตัวรุก)",
+        age: 26,
+        nationality: "🇪🇸 Spain",
+        from_club: "RB Leipzig",
+        from_flag: "🔴⚪",
+        to_club: "FC Barcelona",
+        to_flag: "🔵🔴",
+        fee: "€55.0M",
+        fee_eur: "€55.0M",
+        fee_val: 47.0,
+        league: "La Liga",
+        league_flag: "🇪🇸",
+        date: "09 Aug 2024",
+        contract: "2030",
+        rating: 9.2,
+        ai_analysis_th: "ฮีโร่แชมป์ยูโร 2024 กลับคืนสู่เหย้าลามาเซีย สร้างมิติเกมรุกสร้างสรรค์และความยืดหยุ่นในแดนกลางให้บาร์ซ่า",
+        ai_analysis_en: "Euro 2024 standout returns to his boyhood club to reinforce Barcelona's midfield creativity."
+    },
+    {
+        id: "tr-10",
+        player_name: "Conor Gallagher",
+        position: "CM (กองกลาง)",
+        age: 24,
+        nationality: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England",
+        from_club: "Chelsea",
+        from_flag: "🔵",
+        to_club: "Atlético Madrid",
+        to_flag: "🔴⚪",
+        fee: "€42.0M",
+        fee_eur: "€42.0M",
+        fee_val: 36.0,
+        league: "La Liga",
+        league_flag: "🇪🇸",
+        date: "21 Aug 2024",
+        contract: "2029",
+        rating: 8.8,
+        ai_analysis_th: "มิดฟิลด์สายขยันและวิ่งสู้ฟัด สไตล์การเล่นเข้าทางปรัชญาของ ซิเมโอเน่ อย่างลงตัวที่สุด",
+        ai_analysis_en: "High-workrate midfielder perfectly aligns with Diego Simeone's intense tactical demands."
+    },
+
+    // 🇮🇹 Serie A
+    {
+        id: "tr-11",
+        player_name: "Teun Koopmeiners",
+        position: "CAM / CM (กองกลาง)",
+        age: 26,
+        nationality: "🇳🇱 Netherlands",
+        from_club: "Atalanta",
+        from_flag: "🔵กระ",
+        to_club: "Juventus",
+        to_flag: "⚪⚫",
+        fee: "€54.7M",
+        fee_eur: "€54.7M",
+        fee_val: 46.5,
+        league: "Serie A",
+        league_flag: "🇮🇹",
+        date: "28 Aug 2024",
+        contract: "2029",
+        rating: 9.3,
+        ai_analysis_th: "ดีลใหญ่แห่งฤดูกาลของม้าลาย จอมทัพดัตช์ผู้ทำประตูและแอสซิสต์ได้อย่างมหาศาล ยกระดับแดนกลางม้าลายสู่ยุคใหม่",
+        ai_analysis_en: "Juventus lands premier Serie A midfielder to complete Thiago Motta's new tactical engine."
+    },
+    {
+        id: "tr-12",
+        player_name: "Romelu Lukaku",
+        position: "ST (กองหน้า)",
+        age: 31,
+        nationality: "🇧🇪 Belgium",
+        from_club: "Chelsea",
+        from_flag: "🔵",
+        to_club: "Napoli",
+        to_flag: "🩵",
+        fee: "€30.0M",
+        fee_eur: "€30.0M",
+        fee_val: 25.5,
+        league: "Serie A",
+        league_flag: "🇮🇹",
+        date: "29 Aug 2024",
+        contract: "2027",
+        rating: 9.0,
+        ai_analysis_th: "การกลับมาร่วมงานกับ คอนเต้ กุนซือคู่บุญผู้ดึงศักยภาพสูงสุดของลูกากูออกมาได้เสมอ นาโปลีได้ดาวยิงตัวเป้าผู้ทรงพลัง",
+        ai_analysis_en: "Lukaku reunites with Antonio Conte to spearhead Napoli's new title aspirations."
+    },
+    {
+        id: "tr-13",
+        player_name: "Scott McTominay",
+        position: "CM / CAM (กองกลาง)",
+        age: 27,
+        nationality: "🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland",
+        from_club: "Manchester United",
+        from_flag: "😈",
+        to_club: "Napoli",
+        to_flag: "🩵",
+        fee: "€30.5M",
+        fee_eur: "€30.5M",
+        fee_val: 25.7,
+        league: "Serie A",
+        league_flag: "🇮🇹",
+        date: "30 Aug 2024",
+        contract: "2028",
+        rating: 9.1,
+        ai_analysis_th: "มิดฟิลด์ไดนาโมพลังพุ่งสอดเข้าทำประตู เติมมิติความแข็งแกร่งและความดุดันในแดนกลางให้นาโปลี",
+        ai_analysis_en: "Goalscoring Scottish midfielder brings physicality and box-to-box presence to Serie A."
+    },
+
+    // 🇩🇪 Bundesliga
+    {
+        id: "tr-14",
+        player_name: "Michael Olise",
+        position: "RW (ปีกขวา)",
+        age: 22,
+        nationality: "🇫🇷 France",
+        from_club: "Crystal Palace",
+        from_flag: "🦅",
+        to_club: "Bayern Munich",
+        to_flag: "🔴",
+        fee: "€53.0M",
+        fee_eur: "€53.0M",
+        fee_val: 45.0,
+        league: "Bundesliga",
+        league_flag: "🇩🇪",
+        date: "07 Jul 2024",
+        contract: "2029",
+        rating: 9.4,
+        ai_analysis_th: "ดาวรุ่งอัจฉริยะริมเส้น บาเยิร์นทุ่มคว้าปีกเชิงสูงเพื่อปฏิวัติเกมรุกยุคใหม่ภายใต้การนำของ แว็งซ็องต์ กงปานี",
+        ai_analysis_en: "Bayern Munich secures top creative talent to revitalize their dynamic wing play."
+    },
+    {
+        id: "tr-15",
+        player_name: "João Palhinha",
+        position: "CDM (กองกลางตัวรับ)",
+        age: 29,
+        nationality: "🇵🇹 Portugal",
+        from_club: "Fulham",
+        from_flag: "⚪",
+        to_club: "Bayern Munich",
+        to_flag: "🔴",
+        fee: "€51.0M",
+        fee_eur: "€51.0M",
+        fee_val: 43.0,
+        league: "Bundesliga",
+        league_flag: "🇩🇪",
+        date: "11 Jul 2024",
+        contract: "2028",
+        rating: 9.1,
+        ai_analysis_th: "มิดฟิลด์ตัวรับสายแทคเกิลทำลายเกมคู่แข่ง เสริมความรัดกุมให้แผงมิดฟิลด์เสือใต้ตามที่รอคอยมานาน",
+        ai_analysis_en: "Bayern signs world-class defensive midfielder to solidify their central midfield core."
+    },
+    {
+        id: "tr-16",
+        player_name: "Serhou Guirassy",
+        position: "ST (กองหน้า)",
+        age: 28,
+        nationality: "🇬🇳 Guinea",
+        from_club: "VfB Stuttgart",
+        from_flag: "🔴⚪",
+        to_club: "Borussia Dortmund",
+        to_flag: "🟡⚫",
+        fee: "€17.5M",
+        fee_eur: "€17.5M",
+        fee_val: 15.0,
+        league: "Bundesliga",
+        league_flag: "🇩🇪",
+        date: "18 Jul 2024",
+        contract: "2028",
+        rating: 9.2,
+        ai_analysis_th: "รองดาวซัลโวบุนเดสลีกาซีซั่นก่อน เสือเหลืองได้กองหน้าถล่มประตูระดับ 28 ลูกต่อปีในราคาสุดคุ้มค่า",
+        ai_analysis_en: "Dortmund snatches high-scoring Bundesliga striker at a budget buyout clause."
+    },
+
+    // 🇫🇷 Ligue 1
+    {
+        id: "tr-17",
+        player_name: "João Neves",
+        position: "CM / CDM (กองกลาง)",
+        age: 19,
+        nationality: "🇵🇹 Portugal",
+        from_club: "Benfica",
+        from_flag: "🦅",
+        to_club: "PSG",
+        to_flag: "🔵🔴",
+        fee: "€60.0M",
+        fee_eur: "€60.0M",
+        fee_val: 51.0,
+        league: "Ligue 1",
+        league_flag: "🇫🇷",
+        date: "05 Aug 2024",
+        contract: "2029",
+        rating: 9.5,
+        ai_analysis_th: "มิดฟิลด์อัจฉริยะวัย 19 ปี เปแอสเชได้ห้องเครื่องอนาคตไกลผู้ควบคุมจังหวะเกมได้อย่างยอดเยี่ยม",
+        ai_analysis_en: "PSG lands one of Europe's top teenage midfield prodigies from Benfica."
+    },
+    {
+        id: "tr-18",
+        player_name: "Mason Greenwood",
+        position: "RW / LW / ST (กองหน้า)",
+        age: 22,
+        nationality: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England",
+        from_club: "Manchester United",
+        from_flag: "😈",
+        to_club: "Marseille",
+        to_flag: "⚪🔵",
+        fee: "€31.6M",
+        fee_eur: "€31.6M",
+        fee_val: 26.8,
+        league: "Ligue 1",
+        league_flag: "🇫🇷",
+        date: "18 Jul 2024",
+        contract: "2029",
+        rating: 9.1,
+        ai_analysis_th: "ดาวรุ่งยิงประตูระเบิดฟอร์มในลาลีกา ย้ายร่วมทัพโอลิมปิก มาร์เซย์ ของ โรแบร์โต้ เด แซร์บี้ เพื่อระเบิดสกอร์ในลีกเอิง",
+        ai_analysis_en: "De Zerbi's Marseille signs highly efficient English forward to spearhead their frontline."
+    }
+];
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState('news');
   const [news, setNews] = useState([]);
+  const [transfers, setTransfers] = useState(completedTransfersFallback);
   const [loading, setLoading] = useState(true); 
+  const [transfersLoading, setTransfersLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [transferSearchQuery, setTransferSearchQuery] = useState('');
   const [selectedNewsTeam, setSelectedNewsTeam] = useState('All');
+  const [selectedLeague, setSelectedLeague] = useState('All');
   const [selectedDnaTeam, setSelectedDnaTeam] = useState('Manchester United');
   const [activeAnalysis, setActiveAnalysis] = useState({}); 
   const [cardViewModes, setCardViewModes] = useState({});
@@ -200,10 +595,25 @@ export default function App() {
         }
       })
       .catch((err) => {
-        console.error('❌ หน้าบ้านดึงข้อมูลพลาด:', err);
+        console.error('❌ หน้าบ้านดึงข้อมูลข่าวพลาด:', err);
       })
       .finally(() => {
         setLoading(false);
+      });
+
+    setTransfersLoading(true);
+    fetch(`${API_BASE_URL}/api/transfers`)
+      .then((res) => res.json())
+      .then((response) => {
+        if (response.status === 'success' && response.data) {
+          setTransfers(response.data);
+        }
+      })
+      .catch((err) => {
+        console.error('❌ หน้าบ้านดึงข้อมูลย้ายทีมพลาด:', err);
+      })
+      .finally(() => {
+        setTransfersLoading(false);
       });
   }, []);
 
@@ -211,8 +621,20 @@ export default function App() {
     const matchesTeam = selectedNewsTeam === 'All' || (item.teams && item.teams.includes(selectedNewsTeam));
     const matchesSearch = searchQuery.trim() === '' || 
       (item.title_en && item.title_en.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.title_th && item.title_th.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.summary_en && item.summary_en.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.summary_th && item.summary_th.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesTeam && matchesSearch;
+  });
+
+  const filteredTransfers = transfers.filter(item => {
+    const matchesLeague = selectedLeague === 'All' || item.league === selectedLeague;
+    const matchesSearch = transferSearchQuery.trim() === '' ||
+      item.player_name.toLowerCase().includes(transferSearchQuery.toLowerCase()) ||
+      item.from_club.toLowerCase().includes(transferSearchQuery.toLowerCase()) ||
+      item.to_club.toLowerCase().includes(transferSearchQuery.toLowerCase()) ||
+      item.position.toLowerCase().includes(transferSearchQuery.toLowerCase());
+    return matchesLeague && matchesSearch;
   });
 
   const squadToDisplay = squadDatabase.filter(player => player.team === selectedDnaTeam);
@@ -293,160 +715,325 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0b1528] via-[#020617] to-[#000000] text-slate-100 font-sans antialiased selection:bg-blue-500/30 selection:text-blue-200 overflow-x-hidden relative pb-12">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans antialiased selection:bg-zinc-800 selection:text-zinc-100 overflow-x-hidden relative pb-12">
       <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none"></div>
 
-      {/* 🔮 เอฟเฟกต์ Fade หน้าจอ */}
+      {/* Fade animation */}
       <style>{`
         @keyframes fadeIn {
-          0% { opacity: 0; transform: scale(0.98); }
+          0% { opacity: 0; transform: scale(0.99); }
           100% { opacity: 1; transform: scale(1); }
         }
         .animate-fadeIn {
-          animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: fadeIn 0.2s ease-out forwards;
         }
       `}</style>
 
-      <header className="border-b border-blue-500/15 bg-[#080d24]/80 backdrop-blur-2xl sticky top-0 z-50 px-6 py-5 max-w-7xl mx-auto rounded-b-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)]">
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-600/10 border border-blue-500/30 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.25)] flex items-center justify-center">
-              <Trophy className="w-7 h-7 text-blue-400" />
+      {/* Clean Navbar */}
+      <header className="border-b border-zinc-800 bg-[#09090b]/95 backdrop-blur-md sticky top-0 z-50 px-6 py-4 max-w-7xl mx-auto rounded-b-2xl shadow-sm">
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl md:text-5xl font-normal tracking-wider uppercase text-white leading-none drop-shadow-[0_2px_10px_rgba(30,144,255,0.4)]" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+              <h1 className="text-3xl md:text-4xl font-normal tracking-wider uppercase text-white leading-none" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
                 Tier1 Football
               </h1>
-              <p className="text-[9px] uppercase tracking-[0.45em] text-blue-400 font-black mt-1">Verified Transfer Intelligence</p>
+              <p className="text-[9px] uppercase tracking-[0.35em] text-zinc-400 font-bold mt-1">Verified Transfer Intelligence</p>
             </div>
           </div>
 
-          {/* 📋 ปุ่มเมนูบอร์ดแถบนำทางอัปเกรด 3 แท็บครบเซ็ตระดับโปรเจกต์ส่งพอร์ต */}
-          <div className="flex bg-[#030712]/80 p-1.5 rounded-2xl border border-white/5 shadow-inner gap-1 flex-wrap justify-center">
+          {/* Minimal Navbar Tabs */}
+          <div className="flex bg-[#121215] p-1.5 rounded-xl border border-zinc-800 shadow-inner gap-1 flex-wrap justify-center">
             <button 
               onClick={() => setCurrentPage('news')}
-              className={`flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl text-xs font-bold tracking-widest uppercase transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all ${
                 currentPage === 'news' 
-                  ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]' 
-                  : 'text-slate-500 hover:text-slate-300 transparent border border-transparent'
+                  ? 'bg-zinc-100 text-zinc-950 font-black shadow-sm' 
+                  : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
               }`}
             >
-              <Newspaper className="w-4 h-4" /> News Feed
+              <Newspaper className="w-3.5 h-3.5" /> ข่าวฟุตบอลสด
+            </button>
+            <button 
+              onClick={() => setCurrentPage('transfers')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all ${
+                currentPage === 'transfers' 
+                  ? 'bg-zinc-100 text-zinc-950 font-black shadow-sm' 
+                  : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
+              }`}
+            >
+              <CheckCircle className="w-3.5 h-3.5" /> Transfer Room
             </button>
             <button 
               onClick={() => setCurrentPage('database')}
-              className={`flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl text-xs font-bold tracking-widest uppercase transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all ${
                 currentPage === 'database' 
-                  ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]' 
-                  : 'text-slate-500 hover:text-slate-300 transparent border border-transparent'
+                  ? 'bg-zinc-100 text-zinc-950 font-black shadow-sm' 
+                  : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
               }`}
             >
-              <Database className="w-4 h-4" /> Player DNA
+              <Database className="w-3.5 h-3.5" /> Player DNA
             </button>
             <button 
               onClick={() => setCurrentPage('builder')}
-              className={`flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl text-xs font-bold tracking-widest uppercase transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase transition-all ${
                 currentPage === 'builder' 
-                  ? 'bg-amber-600/20 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]' 
-                  : 'text-slate-500 hover:text-slate-300 transparent border border-transparent'
+                  ? 'bg-zinc-100 text-zinc-950 font-black shadow-sm' 
+                  : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
               }`}
             >
-              <Zap className="w-4 h-4" /> Squad Builder ⚡
+              <Zap className="w-3.5 h-3.5" /> Squad Builder
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 md:p-6 mt-4 relative z-10">
+      <main className="max-w-7xl mx-auto p-4 md:p-6 mt-2 relative z-10">
         {/* ============================================================================== */}
         {/* หน้า 1: NEWS FEED */}
         {/* ============================================================================== */}
         {currentPage === 'news' && (
-          <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[#080f28]/50 backdrop-blur-xl border border-white/[0.04] p-4 rounded-3xl">
-              <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-1 scrollbar-thin scrollbar-thumb-blue-900/50 scrollbar-track-transparent">
+          <div className="space-y-5 animate-fadeIn">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[#121215] border border-zinc-800 p-4 rounded-2xl">
+              <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-1 scrollbar-none">
                 {['All', 'Manchester United', 'Liverpool', 'Arsenal', 'Chelsea', 'Manchester City', 'Bayern Munich'].map((team) => (
                   <button
                     key={team}
                     onClick={() => setSelectedNewsTeam(team)}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all whitespace-nowrap border ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap border ${
                       selectedNewsTeam === team 
-                        ? 'bg-blue-600/20 text-blue-200 border-blue-500/50 shadow-inner' 
-                        : 'bg-[#030712]/60 border-white/5 text-slate-400 hover:border-blue-500/30'
+                        ? 'bg-zinc-100 text-zinc-950 border-zinc-100 font-bold shadow-sm' 
+                        : 'bg-[#09090b] border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                     }`}
                   >
-                    {team === 'All' ? '🌐 All Teams' : team}
+                    {team === 'All' ? 'ทั้งหมด' : team}
                   </button>
                 ))}
               </div>
               
-              <div className="relative w-full md:w-80">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+              <div className="relative w-full md:w-72">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
                 <input
                   type="text"
                   placeholder="ค้นหาข่าว..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#030712]/70 border border-blue-500/20 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-200 outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10"
+                  className="w-full bg-[#09090b] border border-zinc-800 rounded-xl pl-9 pr-9 py-2 text-xs text-zinc-100 placeholder-zinc-500 outline-none focus:border-zinc-600"
                 />
                 {searchQuery && (
-                  <X className="w-4 h-4 absolute right-3 top-3 text-slate-400 cursor-pointer hover:text-white" onClick={() => setSearchQuery('')} />
+                  <X className="w-4 h-4 absolute right-3 top-2.5 text-zinc-400 cursor-pointer hover:text-white" onClick={() => setSearchQuery('')} />
                 )}
               </div>
             </div>
 
-            <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400 flex items-center gap-2 pl-2">
-              <Newspaper className="w-4 h-4 text-blue-400" /> Live Database Stream News
-            </h2>
-
             {loading ? (
-              <div className="text-center py-20 text-blue-400 text-sm animate-pulse flex flex-col items-center gap-3 justify-center">
-                <Zap className="w-6 h-6 animate-spin text-blue-500" />
-                <span>กำลังยิงสัญญาณเพื่อดึงข่าวจริงจากระบบหลังบ้าน...</span>
+              <div className="text-center py-20 text-zinc-400 text-sm flex flex-col items-center gap-3 justify-center">
+                <Activity className="w-6 h-6 animate-spin text-zinc-400" />
+                <span>กำลังดึงข้อมูลข่าวฟุตบอลล่าสุด...</span>
               </div>
             ) : filteredNews.length === 0 ? (
-              <div className="text-center py-20 text-slate-500 text-sm border border-dashed border-white/5 rounded-3xl bg-[#030712]/40">
-                📭 ไม่พบข้อมูลข่าวจริงส่งตรงจากระบบ API หลังบ้านในขณะนี้
+              <div className="text-center py-20 text-zinc-500 text-sm border border-zinc-800 rounded-2xl bg-[#121215]">
+                ไม่พบข้อมูลข่าวจริงในขณะนี้
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredNews.map((item, index) => (
-                  <div key={index} className="bg-[#0c1426]/50 backdrop-blur-xl border border-white/[0.04] hover:border-blue-500/40 rounded-3xl p-5 transition-all space-y-4">
-                    <div className="w-full h-52 rounded-2xl overflow-hidden bg-[#030712] relative">
-                      <img src={item.news_image} alt="news" className="w-full h-full object-cover opacity-80" />
+                  <div key={index} className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700 rounded-2xl p-5 transition-all space-y-4 shadow-sm">
+                    <div className="w-full h-52 rounded-xl overflow-hidden bg-[#09090b] relative border border-zinc-800/60">
+                      <img src={item.news_image} alt="news" className="w-full h-full object-cover opacity-85" />
+                      <div className="absolute top-3 left-3 flex gap-2">
+                        <span className="text-[10px] font-bold uppercase bg-zinc-900/90 text-zinc-200 px-2.5 py-1 rounded-lg border border-zinc-700 shadow-sm backdrop-blur-md">{item.source}</span>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <span className="text-[9px] font-bold uppercase bg-blue-500/10 text-blue-300 px-2 py-1 rounded-md border border-blue-500/20">{item.source}</span>
+
+                    <div className="space-y-1.5 border-l-2 border-zinc-600 pl-3">
+                      <h3 className="text-white text-base font-bold leading-snug tracking-tight">
+                        🇹🇭 {item.title_th || item.title_en}
+                      </h3>
+                      <p className="text-zinc-400 text-xs font-medium flex items-center gap-1.5">
+                        <span className="text-[9px] font-bold bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded border border-zinc-700">ENG</span>
+                        <span>{item.title_en}</span>
+                      </p>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      <div className="bg-[#09090b] p-3.5 rounded-xl border border-zinc-800/80 space-y-1">
+                        <div className="text-zinc-400 text-[11px] font-bold uppercase tracking-wider">
+                          บทสรุปภาษาไทย
+                        </div>
+                        <p className="text-zinc-200 text-xs sm:text-sm leading-relaxed">
+                          {item.summary_th}
+                        </p>
+                      </div>
+
+                      {item.summary_en && (
+                        <div className="bg-[#09090b]/60 p-3 rounded-xl border border-zinc-800/40 space-y-1">
+                          <div className="text-zinc-500 text-[11px] font-bold uppercase tracking-wider">
+                            English Summary
+                          </div>
+                          <p className="text-zinc-400 text-xs leading-relaxed italic">
+                            "{item.summary_en}"
+                          </p>
+                        </div>
+                      )}
                     </div>
                     
-                    <h3 className="text-slate-400 text-xs pl-2 border-l-2 border-blue-500/30">ENG: {item.title_en}</h3>
-                    
-                    <p className="text-[#f1f5f9] text-sm leading-relaxed bg-[#020617]/50 p-3 rounded-xl border border-white/[0.02]">
-                      {item.summary_th}
-                    </p>
-                    
-                    <div className="border-t border-white/5 pt-3 space-y-2">
+                    <div className="border-t border-zinc-800/80 pt-3 space-y-2">
                       <a 
                         href={item.url || item.link || "#"} 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-blue-400 bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 transition-all text-center cursor-pointer shadow-sm"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-zinc-200 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 hover:text-white transition-all text-center cursor-pointer shadow-sm"
                       >
                         <span>อ่านข่าวเต็ม (Read Full Article)</span>
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-                      <button onClick={() => toggleAnalysis(index)} className="w-full flex items-center justify-between px-4 py-2 rounded-xl text-xs font-bold text-slate-400 bg-[#0f172a]/40 border border-white/5 hover:border-blue-500/30">
-                        <div className="flex items-center gap-2"><Activity className="w-3.5 h-3.5" /> <span>FM Tactical Analysis</span></div>
-                      </button>
-                      
-                      {activeAnalysis[index] && (
-                        <div className="mt-3 bg-[#030712]/90 border border-white/5 rounded-xl p-3 space-y-2 text-xs animate-fadeIn">
-                          <div className="flex justify-between"><span className="text-blue-400">Tactical Fit</span><span className="text-blue-300 font-bold">{item.tactical_fit?.score}%</span></div>
-                          <div className="flex justify-between border-t border-white/5 pt-2"><span className="text-amber-400">Financial Impact</span><span className="text-amber-300 font-bold">{item.financial_impact?.score}%</span></div>
-                        </div>
-                      )}
+        {/* ============================================================================== */}
+        {/* หน้า 2: DONE DEALS (COMPLETED TRANSFERS TOP 5 LEAGUES) */}
+        {/* ============================================================================== */}
+        {currentPage === 'transfers' && (
+          <div className="space-y-5 animate-fadeIn">
+            {/* Clean Header Banner */}
+            <div className="bg-[#121215] border border-zinc-800 p-5 md:p-6 rounded-2xl shadow-sm space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1">
+                    <span>Transfer Room</span>
+                    <span>•</span>
+                    <span>Top 5 European Leagues</span>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                    Official Completed Transfers
+                  </h2>
+                  <p className="text-zinc-400 text-xs mt-1">
+                    รวมดีลย้ายทีมที่ได้รับการยืนยันเป็นทางการแล้ว (Premier League, La Liga, Serie A, Bundesliga, Ligue 1)
+                  </p>
+                </div>
+
+                {/* Search Bar */}
+                <div className="relative w-full md:w-72">
+                  <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="ค้นหานักเตะ หรือสโมสร..."
+                    value={transferSearchQuery}
+                    onChange={(e) => setTransferSearchQuery(e.target.value)}
+                    className="w-full bg-[#09090b] border border-zinc-800 rounded-xl pl-9 pr-9 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600"
+                  />
+                  {transferSearchQuery && (
+                    <button onClick={() => setTransferSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Minimal Clean Summary Line & League Filters */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-zinc-800/80">
+                <div className="text-xs text-zinc-400 font-mono">
+                  แสดงผล <span className="text-white font-bold">{transfers.length}</span> ดีลทางการ • มูลค่ารวม <span className="text-emerald-400 font-bold">£{transfers.reduce((acc, curr) => acc + (curr.fee_val || 0), 0).toFixed(1)}M</span>
+                </div>
+
+                {/* Clean League Filter Buttons */}
+                <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+                  {[
+                    { key: 'All', name: 'ทั้งหมด' },
+                    { key: 'Premier League', name: 'Premier League' },
+                    { key: 'La Liga', name: 'La Liga' },
+                    { key: 'Serie A', name: 'Serie A' },
+                    { key: 'Bundesliga', name: 'Bundesliga' },
+                    { key: 'Ligue 1', name: 'Ligue 1' }
+                  ].map((leagueItem) => (
+                    <button
+                      key={leagueItem.key}
+                      onClick={() => setSelectedLeague(leagueItem.key)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap border ${
+                        selectedLeague === leagueItem.key
+                          ? 'bg-zinc-100 text-zinc-950 font-bold border-zinc-100 shadow-sm'
+                          : 'bg-[#09090b] border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white'
+                      }`}
+                    >
+                      {leagueItem.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Transfers Clean List */}
+            {transfersLoading ? (
+              <div className="flex flex-col items-center justify-center p-12 text-zinc-400 space-y-4">
+                <Activity className="w-6 h-6 animate-spin text-zinc-400" />
+                <span className="text-xs">กำลังโหลดข้อมูลดีลย้ายทีม...</span>
+              </div>
+            ) : filteredTransfers.length === 0 ? (
+              <div className="bg-[#121215] border border-zinc-800 p-12 rounded-2xl text-center space-y-2">
+                <p className="text-zinc-300 text-sm font-semibold">ไม่พบดีลย้ายทีมตามเงื่อนไขการค้นหา</p>
+                <p className="text-zinc-500 text-xs">ลองเปลี่ยนคำค้นหาหรือเลือกลีกอื่น</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {filteredTransfers.map((item) => (
+                  <div 
+                    key={item.id}
+                    className="bg-[#121215] border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-4 shadow-sm transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  >
+                    {/* Left: Player Information */}
+                    <div className="space-y-1 md:w-4/12">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-bold text-white tracking-tight">
+                          {item.player_name}
+                        </h3>
+                        <span className="text-[11px] text-zinc-300 bg-zinc-800 border border-zinc-700/80 px-2 py-0.5 rounded font-mono">
+                          {item.position}
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-zinc-400 flex items-center gap-2 flex-wrap">
+                        <span className="text-zinc-300 font-medium">{item.league}</span>
+                        <span>•</span>
+                        <span>{item.nationality}</span>
+                        <span>•</span>
+                        <span>{item.age} ปี</span>
+                        <span>•</span>
+                        <span>สัญญาถึง {item.contract}</span>
+                      </div>
+                    </div>
+
+                    {/* Middle: Club Transfer Path */}
+                    <div className="flex items-center gap-3 bg-[#09090b] border border-zinc-800/80 rounded-lg px-4 py-2.5 md:w-5/12 justify-between">
+                      <div className="flex items-center gap-2 overflow-hidden w-5/12">
+                        <span className="text-xs font-semibold text-zinc-400 truncate">{item.from_club}</span>
+                      </div>
+
+                      <div className="text-zinc-500 flex-shrink-0">
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+
+                      <div className="flex items-center gap-2 overflow-hidden w-5/12 justify-end text-right">
+                        <span className="text-xs font-bold text-white truncate">{item.to_club}</span>
+                      </div>
+                    </div>
+
+                    {/* Right: Transfer Fee & Date */}
+                    <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center md:w-3/12 gap-1 border-t md:border-t-0 border-zinc-800/60 pt-2 md:pt-0">
+                      <div className="text-lg md:text-2xl font-black text-emerald-400 font-mono tracking-tight flex items-baseline gap-1">
+                        <span>{item.fee}</span>
+                        <span className="text-xs md:text-sm text-zinc-400 font-semibold font-sans">({item.fee_eur})</span>
+                      </div>
+                      <div className="text-xs text-zinc-500 font-medium">
+                        {item.date}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -460,20 +1047,20 @@ export default function App() {
         {/* ============================================================================== */}
         {currentPage === 'database' && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="bg-[#080f28]/50 backdrop-blur-2xl border border-white/[0.04] p-5 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] space-y-4">
-              <div className="flex items-center gap-2 text-slate-400">
-                <Shield className="w-4 h-4 text-emerald-400" />
+            <div className="bg-[#121215] border border-zinc-800 p-5 rounded-2xl shadow-sm space-y-4">
+              <div className="flex items-center gap-2 text-zinc-400">
+                <Shield className="w-4 h-4 text-zinc-300" />
                 <span className="text-xs font-bold uppercase tracking-[0.15em]">Select Squad Database</span>
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-emerald-900/50 scrollbar-track-transparent">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                 {['Manchester United', 'Liverpool', 'Arsenal', 'Manchester City', 'Bayern Munich'].map((team) => (
                   <button
                     key={team}
                     onClick={() => setSelectedDnaTeam(team)}
-                    className={`px-5 py-3 rounded-2xl text-xs font-bold tracking-wide transition-all whitespace-nowrap border ${
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all whitespace-nowrap border ${
                       selectedDnaTeam === team 
-                        ? 'bg-emerald-600/20 text-emerald-200 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]' 
-                        : 'bg-[#030712]/60 border-white/5 text-slate-400 hover:border-emerald-500/30'
+                        ? 'bg-zinc-100 text-zinc-950 border-zinc-100 font-extrabold shadow-sm' 
+                        : 'bg-[#09090b] border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white'
                     }`}
                   >
                     {team}
@@ -482,8 +1069,8 @@ export default function App() {
               </div>
             </div>
 
-            <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-400 flex items-center gap-2 pl-2">
-              <Database className="w-4 h-4" /> {selectedDnaTeam} - Core Squad DNA
+            <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-zinc-400 flex items-center gap-2 pl-1">
+              <Database className="w-4 h-4 text-zinc-300" /> {selectedDnaTeam} - Core Squad DNA
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -729,10 +1316,10 @@ export default function App() {
             </div>
 
             {/* ฝั่งขวา 1 คอลัมน์: คลังรายชื่อนักเตะสำรองที่เป็นวัตถุดิบในการลาก */}
-            <div className="bg-[#0b1224]/60 backdrop-blur-xl border border-white/5 rounded-3xl p-4 shadow-2xl h-[650px] flex flex-col">
-              <div className="space-y-3 pb-3 border-b border-white/5">
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Shield className="w-4 h-4 text-amber-400" />
+            <div className="bg-[#121215] border border-zinc-800 rounded-2xl p-4 shadow-sm h-[650px] flex flex-col">
+              <div className="space-y-3 pb-3 border-b border-zinc-800">
+                <div className="flex items-center gap-2 text-zinc-300">
+                  <Shield className="w-4 h-4 text-zinc-300" />
                   <span className="text-xs font-black uppercase tracking-wider">Drag Player Pool (ลากนักเตะจากตรงนี้)</span>
                 </div>
 
@@ -744,8 +1331,8 @@ export default function App() {
                       onClick={() => setBuilderSquadFilter(t)}
                       className={`px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wide transition-all border whitespace-nowrap cursor-pointer ${
                         builderSquadFilter === t
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-inner'
-                          : 'bg-black/30 border-white/5 text-slate-400 hover:text-slate-200'
+                          ? 'bg-zinc-100 text-zinc-950 border-zinc-100 font-extrabold shadow-sm'
+                          : 'bg-[#09090b] border border-zinc-800 text-zinc-400 hover:text-zinc-200'
                       }`}
                     >
                       {t === 'All' ? '🌐 All' : t.split(' ').pop()}
